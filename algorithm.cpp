@@ -2358,7 +2358,31 @@ TreeNode* trimBST(TreeNode* root, int L, int R) {
 说明: 最小的值是 2 ，第二小的值是 5 。
 */
 int findSecondMinimumValue(TreeNode* root) {
-	return 0;
+	if(root==NULL || (root->left ==NULL && root->right==NULL)){
+		return -1;
+	}
+
+	int left=root->left->val;
+	int right=root->right->val;
+
+	if(left==root->val){
+		left=findSecondMinimumValue(root->left);
+	}
+
+	if(right==root->val){
+		right=findSecondMinimumValue(root->right);
+	}
+
+
+	if(left!=-1 && right!=-1){
+		return min(left,right);
+	}
+
+	if(left!=-1){
+		return left;
+	}
+
+	return right;
 }
 
 int main(){
