@@ -2385,6 +2385,247 @@ int findSecondMinimumValue(TreeNode* root) {
 	return right;
 }
 
+/*
+674. 最长连续递增序列
+
+给定一个未经排序的整数数组，找到最长且连续的的递增序列。
+
+示例 1:
+输入: [1,3,5,4,7]
+输出: 3
+解释: 最长连续递增序列是 [1,3,5], 长度为3。
+尽管 [1,3,5,7] 也是升序的子序列, 但它不是连续的，因为5和7在原数组里被4隔开。 
+*/
+int findLengthOfLCIS(vector<int>& nums) {
+	if(nums.empty()){
+		return 0;
+	}
+
+	size_t preIndex=0;
+	size_t curIndex=0;
+	size_t maxLength=0;
+
+	while(curIndex<nums.size()-1){
+		if(nums[curIndex]>=nums[curIndex+1]){
+			if(maxLength<(curIndex-preIndex+1)){
+				maxLength=curIndex-preIndex+1;
+			}
+			++curIndex;
+			preIndex=curIndex;
+		}else{
+			++curIndex;
+		}
+	}
+
+	if(maxLength<curIndex-preIndex){
+		maxLength=curIndex-preIndex+1;
+	}
+
+	return maxLength;
+}
+
+/*
+680. 验证回文字符串 Ⅱ
+
+给定一个非空字符串 s，最多删除一个字符。判断是否能成为回文字符串。
+示例 1:
+输入: "aba" 输出: True
+*/
+bool validPalindrome(string s) {
+ if(s.length()==1)
+            return 1;
+        int i=0,j=s.length()-1,flag=0;
+        while(i<j)
+        {
+            if(s[i] != s[j])
+            {
+                if(flag==0)
+                    flag=1;
+                else
+                    return 0;
+
+                if(i+1==j)
+                    return 1;
+                else
+                {
+                    if(s[i+1]==s[j] &&s[i+2]==s[j-1])
+                        i++;
+                    else
+                        j--;
+                }
+            }
+            else
+            {
+                i++;
+                j--;
+            }
+        }
+
+        return 1;
+}
+
+/*
+682. 棒球比赛
+
+你现在是棒球比赛记录员。
+给定一个字符串列表，每个字符串可以是以下四种类型之一：
+1.整数（一轮的得分）：直接表示您在本轮中获得的积分数。
+2. "+"（一轮的得分）：表示本轮获得的得分是前两轮有效 回合得分的总和。
+3. "D"（一轮的得分）：表示本轮获得的得分是前一轮有效 回合得分的两倍。
+4. "C"（一个操作，这不是一个回合的分数）：表示您获得的最后一个有效 回合的分数是无效的，应该被移除。
+每一轮的操作都是永久性的，可能会对前一轮和后一轮产生影响。
+你需要返回你在所有回合中得分的总和。
+
+示例 1:
+输入: ["5","2","C","D","+"]
+输出: 30
+解释: 
+第1轮：你可以得到5分。总和是：5。
+第2轮：你可以得到2分。总和是：7。
+操作1：第2轮的数据无效。总和是：5。
+第3轮：你可以得到10分（第2轮的数据已被删除）。总数是：15。
+第4轮：你可以得到5 + 10 = 15分。总数是：30。
+*/
+int calPoints(vector<string>& ops) {
+	vector<int> stack;
+        for(size_t i=0;i<ops.size();i++){
+            if(ops[i]=="+"){
+                stack.push_back(stack[stack.size()-1]+stack[stack.size()-2]);
+            }else if(ops[i]=="D"){
+                stack.push_back(stack[stack.size()-1]*2);
+            }else if(ops[i]=="C"){
+                stack.pop_back();
+            }else{
+                stack.push_back(stoi(ops[i]));
+            }
+        }
+        int sum=0;
+        for(auto v:stack){
+            sum+=v;
+        }
+        return sum;
+}
+
+/*
+686. 重复叠加字符串匹配
+
+给定两个字符串 A 和 B, 寻找重复叠加字符串A的最小次数，
+使得字符串B成为叠加后的字符串A的子串，如果不存在则返回 -1。
+
+举个例子，A = "abcd"，B = "cdabcdab"。
+答案为 3， 因为 A 重复叠加三遍后为 “abcdabcdabcd”，此时 B 是其子串；
+A 重复叠加两遍后为"abcdabcd"，B 并不是其子串。
+*/
+int repeatedStringMatch(string A, string B) {
+	int cnt=0;
+	string s=A;
+	while(s.length()<B.length()){
+		++cnt;
+		s+=A;
+	}
+
+	if(s.find(B)!=s.npos){
+		return cnt;
+	}else{
+		++cnt;
+		s+=A;
+		if(s.find(B)!=s.npos){
+			return cnt;
+		}else{
+			return -1;
+		}
+	}
+}
+
+/*
+687. 最长同值路径
+
+给定一个二叉树，找到最长的路径，这个路径中的每个节点具有相同值。
+这条路径可以经过也可以不经过根节点。
+注意：两个节点之间的路径长度由它们之间的边数表示。
+
+示例 1:
+输入:
+              5
+             / \
+            4   5
+           / \   \
+          1   1   5
+输出:2
+*/
+int longestUnivaluePath_dfs(TreeNode *root,int &maxLength){
+	if(root==NULL){
+		return 0;
+	}
+
+	int left=longestUnivaluePath_dfs(root->left,maxLength);
+	int right=longestUnivaluePath_dfs(root->right,maxLength);
+
+	if(root->left!=NULL && root->val==root->left->val){
+		left+=1;
+	}else{
+		left=0;
+	}
+
+	if(root->right!=NULL && root->val==root->right->val){
+		right+=1;
+	}else{
+		right=0;
+	}
+
+	maxLength=max(maxLength,left+right);
+
+	return max(left,right);
+}
+
+int longestUnivaluePath(TreeNode* root) {
+	if(root==NULL){
+		return 0;
+	}
+
+	int maxLength=0;
+	longestUnivaluePath_dfs(root,maxLength);
+
+	return maxLength;
+}
+
+/*
+690. 员工的重要性
+
+给定一个保存员工信息的数据结构，它包含了员工唯一的id，重要度 和 直系下属的id。
+比如，员工1是员工2的领导，员工2是员工3的领导。他们相应的重要度为15, 10, 5。那么员工1的数据结构是[1, 15, [2]]，
+员工2的数据结构是[2, 10, [3]]，员工3的数据结构是[3, 5, []]。注意虽然员工3也是员工1的一个下属，但是由于并不是直系下属，
+因此没有体现在员工1的数据结构中。现在输入一个公司的所有员工信息，以及单个员工id，返回这个员工和他所有下属的重要度之和。
+
+示例 1:
+输入: [[1, 5, [2, 3]], [2, 3, []], [3, 3, []]], 1
+输出: 11
+解释:员工1自身的重要度是5，他有两个直系下属2和3，而且2和3的重要度均为3。因此员工1的总重要度是 5 + 3 + 3 = 11。
+*/
+class Employee {
+public:
+    // It's the unique ID of each node.
+    // unique id of this employee
+    int id;
+    // the importance value of this employee
+    int importance;
+    // the id of direct subordinates
+    vector<int> subordinates;
+};
+
+int getImportance(vector<Employee*> employees, int id) {
+	if(employees.empty()|| id>(int)employees.size()){
+		return 0;
+	}
+
+	int sum=employees[id]->importance;
+	for(size_t i=0;i<<employees[id]->subordinates.size();++i){
+		sum+=getImportance(employees,employees[id]->subordinates[i]);
+	}
+
+	return sum;
+}
+
 int main(){
 	// string s="abc";
 	// string t="accvbyhgc";
@@ -2453,6 +2694,10 @@ int main(){
 	// std::vector<int> v={0};
 	// cout<<canPlaceFlowers(v,1)<<endl;
 
-	cout<<judgeSquareSum(2147482647)<<endl;
+	// cout<<judgeSquareSum(2147482647)<<endl;
+
+	string s="aguokepatgbnvfqmgmlcupuufxoohdfpgjdmysgvhmvffcnqxjjxqncffvmhvgsymdjgpfdhooxfuupuculmgmqfvnbgtapekouga";
+	cout<<validPalindrome(s)<<endl;
+
 	return 0;
 }
