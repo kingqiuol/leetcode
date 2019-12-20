@@ -2614,13 +2614,24 @@ public:
 };
 
 int getImportance(vector<Employee*> employees, int id) {
-	if(employees.empty()|| id>(int)employees.size()){
+	if(employees.empty()){
 		return 0;
 	}
 
-	int sum=employees[id]->importance;
-	for(size_t i=0;i<<employees[id]->subordinates.size();++i){
-		sum+=getImportance(employees,employees[id]->subordinates[i]);
+	Employee *p=NULL;
+	for(size_t i=0;i<employees.size();++i){
+		if(employees[i]->id==id){
+			p=employees[i];
+		}
+	}
+
+	if(p==NULL){
+		return 0;
+	}
+
+	int sum=p->importance;
+	for(size_t i=0;i<p->subordinates.size();++i){
+		sum+=getImportance(employees,p->subordinates[i]);
 	}
 
 	return sum;
