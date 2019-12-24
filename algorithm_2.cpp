@@ -1,6 +1,8 @@
 #include<iostream>
+#include<fstream>
 #include<vector>
 #include<tr1/unordered_map>
+#include<tr1/unordered_set>
 #include<map>
 #include<algorithm>
 #include<math.h>
@@ -323,8 +325,8 @@ hashMap.get(2);            // 返回 -1 (未找到)
 class MyHashMap {
 private:
     struct node {
+    	int key;
         int value;
-        int key;
         node* next;
         node(int k, int val): key(k), value(val), next(NULL) {};
     };
@@ -550,7 +552,7 @@ vector<vector<int>> floodFill(vector<vector<int>>& image, int sr, int sc, int ne
         for(int i=0;i<4;i++)
         {
             int x=sr+dx[i],y=sc+dy[i];
-            if(x>=0 && x<image.size() && y>=0 &&y<image[0].size()&&image[x][y]==oldColor)
+            if(x>=0 && x<(int)image.size() && y>=0 &&y<(int)image[0].size()&&image[x][y]==oldColor)
             {
                 floodFill(image,x,y,newColor);
             }
@@ -764,15 +766,15 @@ matrix = [
 */
 bool isToeplitzMatrix(vector<vector<int>>& matrix) {
 	       if(matrix.empty()) return true;
-        for(int i = 0; i < matrix[0].size(); i++){
+        for(int i = 0; i < (int)matrix[0].size(); i++){
             int pos_i = 0, pos_j = i, val = matrix[0][i];
-            while(++pos_i < matrix.size() && ++pos_j < matrix[0].size()) {
+            while(++pos_i < (int)matrix.size() && ++pos_j < (int)matrix[0].size()) {
                 if(val != matrix[pos_i][pos_j]) return false;
             }
         }
-        for(int i = 0; i < matrix.size(); i++) {
+        for(int i = 0; i < (int)matrix.size(); i++) {
             int pos_i = i, pos_j = 0, val = matrix[i][0];
-            while(++pos_i < matrix.size() && ++pos_j < matrix[0].size()) {
+            while(++pos_i < (int)matrix.size() && ++pos_j < (int)matrix[0].size()) {
                 if(val != matrix[pos_i][pos_j]) return false;
             }
         }
@@ -824,29 +826,521 @@ int numJewelsInStones(string J, string S) {
     1   3  
 最小的差值是 1, 它是节点1和节点2的差值, 也是节点3和节点2的差值。
 */
+int mmin = 0x7fffffff;
+struct Node {
+    int mostL;
+    int mostR;
+    Node(int x,int y) : mostL(x),mostR(y) {}
+};
+    Node digui(TreeNode* root){
+	if(root->left==NULL&&root->right==NULL){
+		Node t = Node(root->val,root->val);
+		return t;
+	}
+	if(root->left==NULL){
+		Node rt = digui(root->right);
+		mmin = min(mmin, abs(root->val - rt.mostL));
+		Node t = Node(root->val,rt.mostR);
+		return t;
+	}
+	if(root->right==NULL){
+		Node lt = digui(root->left);
+		mmin = min(mmin, abs(root->val - lt.mostR));
+		Node t = Node(lt.mostL,root->val);
+		return t;
+	}
+	Node lt = digui(root->left);
+	Node rt = digui(root->right);
+	mmin = min(mmin,min(abs(root->val - lt.mostR),abs(root->val - rt.mostL)));
+	Node t = Node(lt.mostL,rt.mostR);
+	return t;
+}
+
+ 
 int minDiffInBST(TreeNode* root) {
-	if(root==NULL){
-		return INT_MAX;
+    if(root==NULL){
+        return 0;
+    }
+    digui(root);    
+    return mmin;
+}
+
+/*
+784. 字母大小写全排列
+
+给定一个字符串S，通过将字符串S中的每个字母转变大小写，我们可以获得一个新的字符串。返回所有可能得到的字符串集合。
+
+示例:
+输入: S = "a1b2"
+输出: ["a1b2", "a1B2", "A1b2", "A1B2"]
+*/
+    void backtrack(string &s, int i, vector<string> &res) {
+        if (i ==(int)s.size()) {
+            res.push_back(s);
+            return;
+        }
+        backtrack(s, i + 1, res);
+        if (isalpha(s[i])) {
+            // toggle case
+            s[i] ^= (1 << 5);//大小写转换
+            backtrack(s, i + 1, res);
+        }
+    }
+
+    vector<string> letterCasePermutation(string S) {
+        vector<string> res;
+        backtrack(S, 0, res);
+        return res;
+    }
+
+/*
+788. 旋转数字
+
+我们称一个数 X 为好数, 如果它的每位数字逐个地被旋转 180 度后，我们仍可以得到一个有效的，且和 X 不同的数。
+要求每位数字都要被旋转。如果一个数的每位数字被旋转以后仍然还是一个数字， 则这个数是有效的。0, 1, 
+和 8 被旋转后仍然是它们自己；2 和 5 可以互相旋转成对方；6 和 9 同理，除了这些以外其他的数字旋转以后都不再是有效的数字。
+现在我们有一个正整数 N, 计算从 1 到 N 中有多少个数 X 是好数？
+
+示例:
+输入: 10
+输出: 4
+解释: 
+在[1, 10]中有四个好数： 2, 5, 6, 9。
+注意 1 和 10 不是好数, 因为他们在旋转之后不变。
+*/
+int rotatedDigits(int N) {
+        int counts = 0;  //好数的个数
+
+        for(int i = 1;i<=N;i++)
+
+        {
+
+            string temp = "";
+
+            string a = to_string(i);
+
+            for(int j = 0;j<(int)a.size();j++)
+
+            {
+
+                if(a[j]=='3' || a[j]=='4' || a[j]=='7')
+
+                    break;
+
+                else
+
+                {
+
+                    if(a[j]=='0' || a[j]=='1' || a[j]=='8')
+
+                        temp += a[j];
+
+                    else if(a[j]=='2')
+
+                        temp += '5';
+
+                    else if(a[j]=='5')
+
+                        temp += '2';
+
+                    else if(a[j]=='6')
+
+                        temp += '9';
+
+                    else
+
+                        temp += '6';
+
+                }
+
+            }
+
+            if(temp.size()==a.size() && a!=temp)
+
+                counts++;
+
+        }
+
+        return counts;
+}
+
+/*
+796. 旋转字符串
+
+给定两个字符串, A 和 B。
+A 的旋转操作就是将 A 最左边的字符移动到最右边。 例如, 若 A = 'abcde'，在移动一次之后结果就是'bcdea' 。
+如果在若干次旋转操作之后，A 能变成B，那么返回True。
+
+示例 1:
+输入: A = 'abcde', B = 'cdeab'
+输出: true
+*/
+bool rotateString(string A, string B) {
+	return A.size()==B.size() && (A+A).find(B)!=(A+A).npos;
+}
+
+/*
+804. 唯一摩尔斯密码词
+
+国际摩尔斯密码定义一种标准编码方式，将每个字母对应于一个由一系列点和短线组成的字符串， 
+比如: "a" 对应 ".-", "b" 对应 "-...", "c" 对应 "-.-.", 等等。
+为了方便，所有26个英文字母对应摩尔斯密码表如下：
+[".-","-...","-.-.","-..",".","..-.","--.","....","..",".---","-.-",".-..","--","-.","---",".--.","--.-",".-.","...","-","..-","...-",".--","-..-","-.--","--.."]
+给定一个单词列表，每个单词可以写成每个字母对应摩尔斯密码的组合。例如，"cab" 可以写成 "-.-..--..."，
+(即 "-.-." + "-..." + ".-"字符串的结合)。我们将这样一个连接过程称作单词翻译。
+返回我们可以获得所有词不同单词翻译的数量。
+
+例如:
+输入: words = ["gin", "zen", "gig", "msg"]
+输出: 2
+解释: 
+各单词翻译如下:
+"gin" -> "--...-."
+"zen" -> "--...-."
+"gig" -> "--...--."
+"msg" -> "--...--."
+共有 2 种不同翻译, "--...-." 和 "--...--.".
+*/
+int uniqueMorseRepresentations(vector<string>& words) {
+	        string code [] = {".-","-...","-.-.","-..",".","..-.","--.","....","..",".---","-.-",".-..","--","-.",
+            "---",".--.","--.-",".-.","...","-","..-","...-",".--","-..-","-.--","--.."};
+        vector <string> v = words;
+        set <string> s;
+        for(unsigned int j = 0;j< v.size();j++) {   //遍历words容器
+            string temp;   //用来拼接字符串
+            for(unsigned i = 0;i<words[j].length();i++) {   //遍历容器中的元素，将其转换为摩尔斯密码
+                string word = words[j];
+                temp += code[word[i] - 'a'];
+        }
+                s.insert(temp);   //将拼接好的字符串插入容器
+        }
+        return s.size();     //输出容器中元素的个数
+}
+
+/*
+806. 写字符串需要的行数
+
+我们要把给定的字符串 S 从左到右写到每一行上，每一行的最大宽度为100个单位，
+如果我们在写某个字母的时候会使这行超过了100 个单位，那么我们应该把这个字母写到下一行。
+我们给定了一个数组 widths ，这个数组 widths[0] 代表 'a' 需要的单位，
+ widths[1] 代表 'b' 需要的单位，...， widths[25] 代表 'z' 需要的单位。
+现在回答两个问题：至少多少行能放下S，以及最后一行使用的宽度是多少个单位？将你的答案作为长度为2的整数列表返回。
+
+示例 1:
+输入: 
+widths = [10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10]
+S = "abcdefghijklmnopqrstuvwxyz"
+输出: [3, 60]
+解释: 
+所有的字符拥有相同的占用单位10。所以书写所有的26个字母，
+我们需要2个整行和占用60个单位的一行。
+*/
+vector<int> numberOfLines(vector<int>& widths, string S) {
+	int curLen=0,line=1;
+	for(int i=0;i<(int)S.size();++i){
+		curLen+=widths[S[i]-'a'];
+
+		if(curLen>100){
+			++line;
+			curLen=widths[S[i]-'a'];
+		}
 	}
 
-	int minValue=min(root->val-root->left->val,
-		root->right->val-root->val);
+	std::vector<int> v;
+	v.push_back(line);
+	v.push_back(curLen);
 
-	int left=minDiffInBST(root->left);
-	int right=minDiffInBST(root->right);
-
-	if(minValue<left && minValue<right) return minValue;
-    if(left<minValue && left<right) return left;
-    return right;
+	return v;
 }
+
+/*
+811. 子域名访问计数
+
+一个网站域名，如"discuss.leetcode.com"，包含了多个子域名。
+作为顶级域名，常用的有"com"，下一级则有"leetcode.com"，最低的一级为"discuss.leetcode.com"。
+当我们访问域名"discuss.leetcode.com"时，也同时访问了其父域名"leetcode.com"以及顶级域名 "com"。
+给定一个带访问次数和域名的组合，要求分别计算每个域名被访问的次数。其格式为访问次数+空格+地址，
+例如："9001 discuss.leetcode.com"。接下来会给出一组访问次数和域名组合的列表cpdomains 。
+要求解析出所有域名的访问次数，输出格式和输入格式相同，不限定先后顺序。
+
+示例 1:
+输入: 
+["9001 discuss.leetcode.com"]
+输出: 
+["9001 discuss.leetcode.com", "9001 leetcode.com", "9001 com"]
+说明: 
+例子中仅包含一个网站域名："discuss.leetcode.com"。按照前文假设，子域名"leetcode.com"和"com"都会被访问，所以它们都被访问了9001次。
+*/
+vector<string> subdomainVisits(vector<string>& cpdomains) {
+      map<string,int> domain;
+        
+        vector<string> output;    
+        
+        for(int i=0; i<(int)cpdomains.size(); i++){
+            
+            size_t pos1 = cpdomains[i].find(" ");//找出空格的位置
+            string temp = cpdomains[i].substr(0, pos1);//截取出表示访问次数的字符串
+            
+            int count = atoi(temp.c_str());//转为int
+            
+            if(pos1!=cpdomains[i].npos){
+
+                string temp = cpdomains[i].substr(pos1+1,cpdomains[i].size()-1);//截取出最低一级的域名
+
+                //output.push_back(temp);
+                domain[temp] += count;//向map中插入最低一级的域名
+                //cout << temp << endl;
+            }
+            
+            
+            size_t pos2 = cpdomains[i].find(".");//找出"."的位置
+            
+            while(pos2!=cpdomains[i].npos){
+                
+                string temp = cpdomains[i].substr(pos2+1,cpdomains[i].size()-1);//依次截取高级域名
+                domain[temp] += count;//向map中插入域名
+                
+                pos2 = cpdomains[i].find(".", pos2+1);//查找下一个"."
+                //cout << temp << endl;
+            }
+        }
+        
+        map<string,int>::iterator it;
+        
+        for(it = domain.begin(); it!=domain.end(); it++){
+            
+            string temp = std::to_string(it->second) + " " + it->first;//注意将int转为string
+            output.push_back(temp);
+            
+            //cout << it->first << ":" << it->second << endl;
+        }
+        
+        //cout << domain.size() <<endl;
+
+        
+        return output;
+}
+
+/*
+812. 最大三角形面积
+
+给定包含多个点的集合，从其中取三个点组成三角形，返回能组成的最大三角形的面积。
+
+示例:
+输入: points = [[0,0],[0,1],[1,0],[0,2],[2,0]]
+输出: 2
+解释: 
+这五个点如下图所示。组成的橙色三角形是最大的，面积为2。
+*/
+double largestTriangleArea(vector<vector<int>>& points) {
+	        double result = 0, x1 = 0, y1 = 0, x2 = 0, y2 = 0;
+        for (int i = 0; i < (int)points.size() - 2; i++) {
+            for (int j = i + 1; j < (int)points.size() - 1; j++) {
+                x1 = points[i][0] - points[j][0];
+                y1 = points[i][1] - points[j][1];
+                for (int k = j + 1; k < (int)points.size(); k++) {
+                    x2 = points[i][0] - points[k][0];
+                    y2 = points[i][1] - points[k][1];
+                    result = max(result, fabs(x1 * y2 - x2 * y1));
+                }
+            }
+        }
+        return result / 2.0;
+}
+
+/*
+819. 最常见的单词
+
+给定一个段落 (paragraph) 和一个禁用单词列表 (banned)。返回出现次数最多，同时不在禁用列表中的单词。
+题目保证至少有一个词不在禁用列表中，而且答案唯一。
+禁用列表中的单词用小写字母表示，不含标点符号。段落中的单词不区分大小写。答案都是小写字母。
+
+示例：
+输入: 
+paragraph = "Bob hit a ball, the hit BALL flew far after it was hit."
+banned = ["hit"]
+输出: "ball"
+解释: 
+"hit" 出现了3次，但它是一个禁用的单词。
+"ball" 出现了2次 (同时没有其他单词出现2次)，所以它是段落里出现次数最多的，且不在禁用列表中的单词。 
+注意，所有这些单词在段落里不区分大小写，标点符号需要忽略（即使是紧挨着单词也忽略， 比如 "ball,"）， 
+"hit"不是最终的答案，虽然它出现次数更多，但它在禁用单词列表中。
+*/
+string mostCommonWord(string paragraph, vector<string>& banned) {
+	     unordered_map<string, int> count;
+        unordered_set<string> s;
+        string result;
+        int c = -1;
+        for (auto ban : banned) s.insert(ban);
+        string temp;
+        for (int i = 0; i < (int)paragraph.size(); i++)
+        {
+            if ((paragraph[i] >= 'a' && paragraph[i] <= 'z') || (paragraph[i] >= 'A' && paragraph[i] <= 'Z'))
+            {
+                if (paragraph[i] >= 'a') temp += paragraph[i];
+                else temp += paragraph[i] - 'A' + 'a';
+            }
+            else 
+            {
+                if (!temp.empty() && s.find(temp) == s.end()) count[temp]++;
+                temp.clear();
+            }
+        }
+        if (!temp.empty() && s.find(temp) == s.end()) count[temp]++;
+        for (auto item : count)
+        {
+            if (item.second > c) 
+            {
+                c = item.second;
+                result = item.first;
+            }
+        }
+        return result;
+}
+
+/*
+821. 字符的最短距离
+
+给定一个字符串 S 和一个字符 C。返回一个代表字符串 S 中每个字符到字符串 S 中的字符 C 的最短距离的数组。
+
+示例 1:
+输入: S = "loveleetcode", C = 'e'
+输出: [3, 2, 1, 0, 1, 0, 0, 1, 2, 2, 1, 0]
+*/
+vector<int> shortestToChar(string S, char C) {
+	std::vector<int> v;
+	int pre=-1,last=S.find(C);
+	for(int i=0;i<(int)S.size();++i){
+		if(S[i]==C){
+			v.push_back(0);
+			last=i;
+		}else{
+			if(i<last){
+				if(pre==-1){
+					v.push_back(last-i);
+				}else{
+					v.push_back(min(i-pre,last-i));
+				}
+				
+			}else{
+				if((int)S.find(C,i)!=last){
+					pre=last;
+				}
+
+				last=S.find(C,i);
+				if(last!=(int)S.npos){
+					v.push_back(min(i-pre,last-i));
+				}else{
+					v.push_back(i-pre);
+				}
+				
+			}
+		}
+	}
+
+	return v;
+}
+
+/*
+824. 山羊拉丁文
+
+给定一个由空格分割单词的句子 S。每个单词只包含大写或小写字母。
+我们要将句子转换为 “Goat Latin”（一种类似于 猪拉丁文 - Pig Latin 的虚构语言）。
+山羊拉丁文的规则如下：
+	如果单词以元音开头（a, e, i, o, u），在单词后添加"ma"。
+	例如，单词"apple"变为"applema"。
+	如果单词以辅音字母开头（即非元音字母），移除第一个字符并将它放到末尾，之后再添加"ma"。
+	例如，单词"goat"变为"oatgma"。
+	根据单词在句子中的索引，在单词最后添加与索引相同数量的字母'a'，索引从1开始。
+	例如，在第一个单词后添加"a"，在第二个单词后添加"aa"，以此类推。
+返回将 S 转换为山羊拉丁文后的句子。
+
+示例 1:
+输入: "I speak Goat Latin"
+输出: "Imaa peaksmaaa oatGmaaaa atinLmaaaaa"
+*/
+string toGoatLatin(string S) {
+	    // unordered_set<char> vowels={'a','A','e','E','i','I','o','O','u','U'};
+     //    istringstream ss(S);
+        string temp,ans;
+     //    string str="ma";
+     //    while(ss>>temp){    
+     //        str+="a";
+     //        if(vowels.find(temp[0])!=vowels.end())     //单词首字母是元音
+     //            ans+=temp+str+" ";
+     //        else ans+=temp.substr(1)+temp[0]+str+" ";       //单词首字母不是元音
+     //    }
+     //    ans.pop_back();
+        return ans;
+}
+
+/*
+830. 较大分组的位置
+
+在一个由小写字母构成的字符串 S 中，包含由一些连续的相同字符所构成的分组。
+例如，在字符串 S = "abbxxxxzyy" 中，就含有 "a", "bb", "xxxx", "z" 和 "yy" 这样的一些分组。
+我们称所有包含大于或等于三个连续字符的分组为较大分组。找到每一个较大分组的起始和终止位置。
+最终结果按照字典顺序输出。
+
+示例 1:
+输入: "abbxxxxzzy"
+输出: [[3,6]]
+解释: "xxxx" 是一个起始于 3 且终止于 6 的较大分组。
+*/
+vector<vector<int>> largeGroupPositions(string S) {
+	vector<vector<int>> vec;
+	int start=0,iCount=0;
+	bool flag=false;
+	for(int i=0;i<(int)S.size();++i){
+
+		if(!flag && S[i]==S[i+1]){
+			start=i;
+			flag=true;
+			iCount++;
+		}
+		else if(flag && S[i]==S[i+1]){
+			iCount++;
+		}
+
+		else if(flag && (i+1>=(int)S.size()|| S[i]!=S[i+1])){
+			iCount++;
+			
+			if(iCount>=3){
+				std::vector<int> v;
+				v.push_back(start);
+				v.push_back(i);
+				vec.push_back(v);
+			}
+			
+			flag=false;
+			iCount=0;
+		}	
+		cout<<i+1<<","<<iCount<<endl;
+	}
+
+	return vec;
+}
+
 
 int main(){
 	// cout<<hasAlternatingBits(1431655764)<<endl;
 
 	// vector<int> res=selfDividingNumbers(1,22);
 
-	string plate="1s3 PSt";
-	vector<string> words={"step", "steps", "stripe", "stepple"};
-	shortestCompletingWord(plate,words);
+	// string plate="1s3 PSt";
+	// vector<string> words={"step", "steps", "stripe", "stepple"};
+	// cout<<shortestCompletingWord(plate,words)<<endl;
+
+	// string a="bbbacddceeb";
+    // string b="ceebbbbacdd";
+    // rotateString(a,b);
+
+	// string s="abaa";
+	// char c='b';
+    // shortestToChar(s,c);
+
+	string s="aaa";
+	largeGroupPositions(s);
+
 	return 0;
 }
