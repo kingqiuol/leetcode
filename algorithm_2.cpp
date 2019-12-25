@@ -1350,7 +1350,411 @@ vector<vector<int>> flipAndInvertImage(vector<vector<int>>& A) {
         return A;
 }
 
+/*
+836. 矩形重叠
 
+矩形以列表 [x1, y1, x2, y2] 的形式表示，其中 (x1, y1) 为左下角的坐标，(x2, y2) 是右上角的坐标。
+如果相交的面积为正，则称两矩形重叠。需要明确的是，只在角或边接触的两个矩形不构成重叠。
+给出两个矩形，判断它们是否重叠并返回结果。
+
+示例 1：
+输入：rec1 = [0,0,2,2], rec2 = [1,1,3,3]
+输出：true
+*/
+bool isRectangleOverlap(vector<int>& rec1, vector<int>& rec2) {
+	int left_x=max(rec1[0],rec2[0]);
+	int left_y=max(rec1[1],rec2[1]);
+	int right_x=min(rec1[2],rec2[2]);
+	int right_y=min(rec1[3],rec2[3]);
+
+	if(right_x > left_x && right_y>left_y){
+		return true;
+	}
+	return false;
+}
+
+/*
+840. 矩阵中的幻方
+
+3 x 3 的幻方是一个填充有从 1 到 9 的不同数字的 3 x 3 矩阵，其中每行，每列以及两条对角线上的各数之和都相等。
+给定一个由整数组成的 grid，其中有多少个 3 × 3 的 “幻方” 子矩阵？（每个子矩阵都是连续的）。
+
+示例：
+输入: [[4,3,8,4],
+      [9,5,1,9],
+      [2,7,6,2]]
+输出: 1
+解释: 
+下面的子矩阵是一个 3 x 3 的幻方：
+438
+951
+276
+而这一个不是：
+384
+519
+762
+总的来说，在本示例所给定的矩阵中只有一个 3 x 3 的幻方子矩阵。
+*/
+    bool valid(const vector<vector<int>>& grid, int r, int c) {
+        if (grid[r + 1][c + 1] != 5) return false;
+        unordered_set<int> s;
+        for (int i = 0; i < 3; ++i) {
+            for (int j = 0; j < 3; ++j) {
+                int t = grid[r + i][c + j];
+                if (t < 1 || t > 9 || s.count(t)) return false;
+                s.insert(t);
+            }
+        }
+        for (int i = 0; i < 3; ++i) {
+            int s1 = 0;
+            int s2 = 0;
+            for (int j = 0; j < 3; ++j) {
+                s1 += grid[r + i][c + j];
+                s2 += grid[r + j][c + i];
+            }
+            if (s1 != 15 || s2 != 15) return false;
+        }
+        // 以上判断已经足够断定幻方是否存在
+        return true;
+    }
+    int numMagicSquaresInside(vector<vector<int>>& grid) {
+        if (grid.empty()) return 0;
+        int R = grid.size();
+        int C = grid[0].size();
+        int res = 0;
+        for (int i = 0; i < R - 2; ++i) {
+            for (int j = 0; j < C - 2; ++j) {
+                res += valid(grid, i, j);
+            }
+        }
+        return res;
+    }
+
+/*
+844. 比较含退格的字符串
+
+给定 S 和 T 两个字符串，当它们分别被输入到空白的文本编辑器后，判断二者是否相等，并返回结果。 # 代表退格字符。
+
+示例 1：
+输入：S = "ab#c", T = "ad#c"
+输出：true
+解释：S 和 T 都会变成 “ac”。
+*/
+bool backspaceCompare(string S, string T) {
+	int i=(int)S.size()-1;
+	int j=(int)T.size()-1;
+
+	while(i>=0 || j>=0){
+		if(i>=0 && S[i]=='#'){
+			int iCount=1;
+			--i;
+			while(i>=0&&iCount>0){
+				if(S[i]=='#'){
+					++iCount;
+				}else{
+					--iCount;
+				}
+				--i;
+			}
+		}else if(j>=0 && T[j]=='#'){
+			int iCount=1;
+			--j;
+			while(j>=0&&iCount>0){
+				if(T[j]=='#'){
+					++iCount;
+				}else{
+					--iCount;
+				}
+				--j;
+			}
+		}else if(i>=0 && j>=0 && S[i]==T[j]){
+			--i;--j;
+		}else{
+			return false;
+		}
+	}
+
+	if(i==-1 && j==-1){
+		return true;
+	}
+
+	return false;
+}
+
+/*
+849. 到最近的人的最大距离
+
+在一排座位（ seats）中，1 代表有人坐在座位上，0 代表座位上是空的。
+至少有一个空座位，且至少有一人坐在座位上。
+亚历克斯希望坐在一个能够使他与离他最近的人之间的距离达到最大化的座位上。
+返回他到离他最近的人的最大距离。
+
+示例 1：
+输入：[1,0,0,0,1,0,1]
+输出：2
+解释：
+如果亚历克斯坐在第二个空位（seats[2]）上，他到离他最近的人的距离为 2 。
+如果亚历克斯坐在其它任何一个空位上，他到离他最近的人的距离为 1 。
+因此，他到离他最近的人的最大距离是 2 。 
+*/
+int maxDistToClosest(vector<int>& s) {
+	        int mx = 1, cnt = -1, sz= s.size();
+        for (int i = 1; i < sz - 1; i++) {
+            if (s[i - 1] == 1 && s[i] == 0) {  
+                cnt = 1;
+            }else if (s[i] == 0 && s[i + 1] == 1)  {
+                if (++cnt > mx) {
+                    mx = cnt;
+                    cnt = 0;
+                }
+            }else if (s[i] == 0) {
+               cnt++;
+            }
+        }
+        int lcnt = 0, rcnt = 0;
+        for (int i = 0; s[i] == 0; lcnt++, i++);
+        for (int i = sz - 1; s[i] == 0; rcnt++, i--);
+        
+        return max((mx + 1) >> 1, max(lcnt, rcnt) );
+}
+
+/*
+852. 山脉数组的峰顶索引
+
+我们把符合下列属性的数组 A 称作山脉：
+	A.length >= 3
+	存在 0 < i < A.length - 1 使得A[0] < A[1] < ... A[i-1] < A[i] > A[i+1] > ... > A[A.length - 1]
+给定一个确定为山脉的数组，返回任何满足 A[0] < A[1] < ... A[i-1] < A[i] > A[i+1] > ... > A[A.length - 1] 的 i 的值。
+
+示例 1：
+输入：[0,1,0]
+输出：1
+*/
+int peakIndexInMountainArray(vector<int>& A) {
+	int start=0,end=(int)A.size();
+	while(start<end){
+		int mid=(start+end)/2;
+		if(A[mid-1]<A[mid]&& A[mid]>A[mid+1]){
+			return mid;
+		}else if(A[mid]>A[mid-1]){
+			start=mid-1;
+		}else{
+			end=mid+1;
+		}
+	}
+
+	return 0;
+}
+
+/*
+859. 亲密字符串
+
+给定两个由小写字母构成的字符串 A 和 B ，只要我们可以通过交换 A 中的两个字母得到与 B 相等的结果，
+就返回 true ；否则返回 false 。
+
+示例 1：
+输入： A = "ab", B = "ba"
+输出： true
+*/
+bool buddyStrings(string A, string B) {
+        if(A.empty() || B.empty()){
+        return false;
+    }
+    if(A.size() != B.size()){
+        return false;
+    }
+    vector<int> index;
+    set<char> seen;
+    bool res1=false;
+
+    for(int i=0; i<(int)A.size(); i++){
+        if(seen.count(A[i])){
+            res1 = true;
+        }
+        else{
+            seen.insert(A[i]);
+        }
+
+        if(A[i] != B[i]){
+            index.push_back(i);
+        }
+    }
+
+
+    if(index.empty()){
+        return res1;
+    }
+    else{
+        if(index.size() != 2){
+            return false;
+        }
+        return (A[index[0]] == B[index[1]] && A[index[1]] == B[index[0]]);
+    }
+}
+
+/*
+860. 柠檬水找零
+
+在柠檬水摊上，每一杯柠檬水的售价为 5 美元。
+顾客排队购买你的产品，（按账单 bills 支付的顺序）一次购买一杯。
+每位顾客只买一杯柠檬水，然后向你付 5 美元、10 美元或 20 美元。你必须给每个顾客正确找零，
+也就是说净交易是每位顾客向你支付 5 美元。
+注意，一开始你手头没有任何零钱。
+如果你能给每位顾客正确找零，返回 true ，否则返回 false 。
+
+示例 1：
+输入：[5,5,5,10,20]
+输出：true
+解释：
+前 3 位顾客那里，我们按顺序收取 3 张 5 美元的钞票。
+第 4 位顾客那里，我们收取一张 10 美元的钞票，并返还 5 美元。
+第 5 位顾客那里，我们找还一张 10 美元的钞票和一张 5 美元的钞票。
+由于所有客户都得到了正确的找零，所以我们输出 true。
+*/
+bool lemonadeChange(vector<int>& bills) {
+        if(bills[0]!=5 || bills[1]==20)//自己初始为0，所以第一回合后自己手中的钱应该为5，第二回合应为10
+            return false;
+        int n=0;//5元的数目
+        int m=0;//10元的数目
+        for(int i=0;i<(int)bills.size();i++)
+        {
+            if(bills[i]==5)
+            {
+                n++;
+            }
+            else if(bills[i]==10)
+            {
+                if(n)
+                {
+                    n--;
+                    m++;
+                }
+                else return false;
+            }
+            else
+            {
+                if(m)
+                {
+                    if(n)
+                    {
+                        m--;
+                        n--;
+                        continue;
+                    }
+                }
+                if(n>=3)
+                {
+                    n-=3;
+                }
+                else return false;
+            }
+        }
+        return true;
+}
+
+/*
+867. 转置矩阵
+
+给定一个矩阵 A， 返回 A 的转置矩阵。
+矩阵的转置是指将矩阵的主对角线翻转，交换矩阵的行索引与列索引。
+
+示例 1：
+输入：[[1,2,3],[4,5,6],[7,8,9]]
+输出：[[1,4,7],[2,5,8],[3,6,9]]
+*/
+vector<vector<int>> transpose(vector<vector<int>>& A) {
+	        if(A.empty())
+            return A;
+        int rows=A.size(),cols=A[0].size();
+        vector<int> temp(rows,0);
+        vector<vector<int>> res(cols,temp);
+        for(int i=0;i<rows;i++)
+            for(int j=0;j<cols;j++)
+                res[j][i]=A[i][j];
+        return res;
+}
+
+/*
+868. 二进制间距
+
+给定一个正整数 N，找到并返回 N 的二进制表示中两个连续的 1 之间的最长距离。 
+如果没有两个连续的 1，返回 0 。
+
+示例 1：
+输入：22
+输出：2
+解释：
+22 的二进制是 0b10110 。
+在 22 的二进制表示中，有三个 1，组成两对连续的 1 。
+第一对连续的 1 中，两个 1 之间的距离为 2 。
+第二对连续的 1 中，两个 1 之间的距离为 1 。
+答案取两个距离之中最大的，也就是 2 。
+*/
+ int binaryGap(int N) {
+ 	bool flag=false;
+ 	int iCount=0;
+ 	int max=0;
+ 	while(N!=0){
+ 		if(!flag && (N&1)==1){
+ 			iCount=1;
+ 			flag=true;
+ 			N=N>>1;
+ 		}else if(flag && (N&1)==0){
+ 			iCount++;
+ 			N=N>>1;
+ 		}else if(flag && (N&1)==1){
+ 			flag=false;
+ 			if(iCount>max){
+ 				max=iCount;
+ 				iCount=0;
+ 			}
+ 		}else{
+ 			N=N>>1;
+ 		}
+	}
+
+ 	return max;
+ }
+
+ /*
+872. 叶子相似的树
+
+请考虑一颗二叉树上所有的叶子，这些叶子的值按从左到右的顺序排列形成一个 叶值序列 。
+举个例子，如上图所示，给定一颗叶值序列为 (6, 7, 4, 9, 8) 的树。
+如果有两颗二叉树的叶值序列是相同，那么我们就认为它们是 叶相似 的。
+如果给定的两个头结点分别为 root1 和 root2 的树是叶相似的，则返回 true；否则返回 false 。
+ */
+void leafval(std::vector<int> &v,TreeNode *root){
+	if(root==NULL){
+		return;
+	}
+
+	if(root->left==NULL && root->right==NULL){
+		v.push_back(root->val);
+	}
+
+	leafval(v,root->left);
+	leafval(v,root->right);
+}
+
+bool leafSimilar(TreeNode* root1, TreeNode* root2) {
+	std::vector<int> v1;
+	std::vector<int> v2;
+
+	leafval(v1,root1);
+	leafval(v2,root2);
+
+	if(v1.size()==v2.size()){
+		for(int i=0;i<(int)v1.size();++i){
+			if(v1[i]!=v2[i]){
+				return false;
+			}
+		}
+		return true;
+	}else{
+			return false;
+	}
+}
 
 int main(){
 	// cout<<hasAlternatingBits(1431655764)<<endl;
@@ -1369,8 +1773,14 @@ int main(){
 	// char c='b';
     // shortestToChar(s,c);
 
-	string s="aaa";
-	largeGroupPositions(s);
+	// string s="aaa";
+	// largeGroupPositions(s);
+
+	// string S="hd#dp#czsp#####";
+	// string T="hd#dp#czsp######";
+	// cout<<backspaceCompare(S,T)<<endl;
+
+	cout<<binaryGap(22)<<endl;
 
 	return 0;
 }
